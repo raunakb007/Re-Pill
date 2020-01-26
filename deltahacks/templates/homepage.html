@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Page</title>
+    <style>
+        body {
+            width:100%;
+            height: 100%;
+        }
+        .big{
+            width: 80%;
+            margin: auto;
+            }
+
+        h1{
+            font-size: 2em;
+            }
+
+        .accordion {
+          background-color: #eee;
+          color: #444;
+          cursor: pointer;
+          padding: 18px;
+          width: 100%;
+          border: #888 solid 2px;
+          text-align: left;
+          outline: none;
+          font-size: 15px;
+          transition: 0.4s;
+        }
+
+        .active, .accordion:hover {
+          background-color: #ccc;
+        }
+
+        .panel {
+          padding: 0 18px;
+          display: none;
+          background-color: white;
+          overflow: hidden;
+        }
+        input[type="file"]{
+        display: none;
+        }
+
+         .button{
+          background-color: #4CAF50;
+          margin: 15px 40%;
+          display: inline-block;
+          color: white;
+          border:black solid 4px;
+          border-radius:20px;
+          cursor: pointer;
+          width: 300px;
+          opacity: 0.8;
+          text-align: center;
+          padding: 10px;
+          font-size: 20px;
+
+         }
+
+         #out{
+            float: right;
+            background-color: #5638df;
+            padding: 10px;
+            width: 10%;
+            font-size: 1.3em;
+            text-align: center;
+            border-radius: 30px;
+           }
+
+         #logo{
+            position: relative;
+            left: 37.5%;
+            width: 25%;
+           }
+
+
+    </style>
+</head>
+<body>
+    <img src = "../static/logo3.png" id="logo">
+    <div class="big">
+    <button type="button" id="out" onclick="window.location.href='{{ url_for('login') }}';" > Sign Out </button>
+    <h1> My Prescriptions</h1>
+    {% for dict in user_dict['prescriptions'] %}
+        <button class="accordion">{{ dict['Medication'] }}</button>
+        <div class="panel">
+          <p>
+              Quantity: {{ dict['Quantity'] }} tablets <br>
+              Dosage: {{ dict['Dosage'] }} <br>
+              Timing: {% for time in dict['Timing'] %} {{ time }}
+              {% endfor %}
+          </p>
+
+        </div>
+
+
+
+    {% endfor %}
+
+    <form id="upload-form" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+        <label class="button" style="margin: 15px 39%; margin-top: 25px;">
+        <input type="file" name="file" accept="image/*" multiple>Add an Image</label>
+        <div id="msg"></div>
+        <input type="submit" value="Upload!" class = "button">
+    </form>
+<!--    <button class="accordion">Section 2</button>-->
+<!--    <div class="panel">-->
+<!--      <p>Lorem ipsum...</p>-->
+<!--    </div>-->
+
+<!--    <button class="accordion">Section 3</button>-->
+<!--    <div class="panel">-->
+<!--      <p>Lorem ipsum...</p>-->
+<!--    </div>-->
+    <script>
+        var acc = document.getElementsByClassName("accordion");
+        var i;
+
+        for (i = 0; i < acc.length; i++) {
+          acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var panel = this.nextElementSibling;
+            if (panel.style.display === "block") {
+              panel.style.display = "none";
+            } else {
+              panel.style.display = "block";
+            }
+          });
+        }
+    </script>
+        </div>
+</body>
+</html>
