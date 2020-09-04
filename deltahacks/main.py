@@ -16,52 +16,99 @@ import pytesseract as tess
 
 app = Flask(__name__)
 
-# Use a service account
+# Use a firebase service account
 cred = credentials.Certificate('key.json')
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
 
-def get_hashed_password(plain_text_password):
-    # Hash a password for the first time
-    #   (Using bcrypt, the salt is saved into the hash itself)
-    return bcrypt.hashpw(plain_text_password, bcrypt.gensalt())
+def get_hashed_password(password):
+    """
+    Hashes a given password
+    Args:
+        password (str): The password to be hashed
+    Returns:
+        hashed password (str)
+    """
+    return bcrypt.hashpw(password, bcrypt.gensalt())
 
-def check_password(plain_text_password, hashed_password):
-    # Check hashed password. Using bcrypt, the salt is saved into the hash itself
-    return bcrypt.checkpw(plain_text_password, hashed_password)
+def check_password(password, hashed_password):
+    """
+    Verifies that a given password matches a given hash
+    Args:
+        password (str): The password to verify
+        hashed_password (str): The password to chach against
+    Returns:
+        Whether the given password matches the hash (bool)
+    """
+    return bcrypt.checkpw(password, hashed_password)
 
 def list_users():
+    """
+    Lists the users currently in the database
+    Args:
+        None
+    Returns:
+        list_users (list[str]): list of users
+    """
     users = db.collection('Users').get()
     list_users = [user.id for user in users]
     return list_users
 
 @app.route('/')
 def index():
-    return "HOME"
+    """
+    Redirects to homepage
+    """
+    return redirect(url_for('home'))
 
 @app.route('/home')
 def home():
+    """
+    Renders Remed homepage
+    """
     user_dict = db.collection('Users').document('user@email.com').get().to_dict()
     return render_template('homepage.html', user_dict=user_dict)
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """
+    Endpoint for registering a user
+    Methods:
+        GET: Renders registration page
+        POST: Registers a user
+    Form Arguments:
+        fullname (str): Full name of user
+        dob (str): Date of Birth
+        doctor (str): Name of family physician
+        email (str): email of user
+        password (str): User's password
+    """
     if request.method == "POST":
+
+        # Get form data
+
         fullname = request.form.get('fullname')
         dateofbirth = request.form.get('dob')
         doctor = request.form.get('doctor')
         email = request.form.get('email')
         password = request.form.get('password')
+
+        # Hash password
         hash_pass = get_hashed_password(password.encode('utf-8'))
+
+        # Add user data to database
+
         db.collection('Users').document(email).set({"password": hash_pass,
                                                     "name": fullname,
                                                     "doctor": doctor,
                                                     "date of birth": dateofbirth,
                                                     "prescriptions": []})
+        # Redirect to login
         return redirect(url_for('login'))
+    # GET: Renders registration page
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
